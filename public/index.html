@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Umumiy Xabarlar</title>
+    <title>Chat</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -16,30 +16,23 @@
         </div>
 
         <div id="authScreen" class="terminal-body">
-          <p class="line">$ shared-chat</p>
-          <p id="introText" class="line muted">Ismingizni kiriting.</p>
+          <p class="line">$ chat</p>
+          <p id="introText" class="line muted">Ro'yxatdan o'ting.</p>
 
           <form id="authForm" class="prompt-form">
             <label class="prompt-row">
               <span>&gt;</span>
-              <input id="nameInput" type="text" maxlength="30" placeholder="user1" autofocus />
+              <input id="nameInput" type="text" maxlength="30" placeholder="ismingiz" autofocus />
             </label>
-            <button id="enterBtn" type="submit">Kirish</button>
+            <button type="submit">Ro'yxatdan o'tish</button>
           </form>
 
           <p id="statusText" class="line status"></p>
         </div>
 
         <div id="chatScreen" class="terminal-body hidden">
-          <div class="chat-top">
-            <p class="line">$ session started</p>
-            <button id="copyLinkBtn" type="button">Havolani nusxalash</button>
-          </div>
-
-          <p class="line muted">
-            Havola:
-            <a id="roomLink" href="#" target="_blank" rel="noreferrer"></a>
-          </p>
+          <p class="line">$ chat started</p>
+          <p id="userLine" class="line muted"></p>
 
           <div id="messages" class="messages"></div>
 
@@ -57,4 +50,4 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/app.js"></script>
   </body>
-  </html>
+</html>

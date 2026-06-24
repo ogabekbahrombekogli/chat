@@ -6,37 +6,29 @@ const introText = document.getElementById("introText");
 const statusText = document.getElementById("statusText");
 const authScreen = document.getElementById("authScreen");
 const chatScreen = document.getElementById("chatScreen");
-const roomLink = document.getElementById("roomLink");
-const copyLinkBtn = document.getElementById("copyLinkBtn");
+const userLine = document.getElementById("userLine");
 const messages = document.getElementById("messages");
 const messageForm = document.getElementById("messageForm");
 const messageInput = document.getElementById("messageInput");
 
-let currentRoomId = "";
-let currentUserName = localStorage.getItem("chat-user-name") || "";
-
-nameInput.value = currentUserName;
+let currentUserName = "";
 
 function setStatus(text, isError = false) {
   statusText.textContent = text;
   statusText.classList.toggle("error", isError);
 }
 
-function saveUserName() {
-  currentUserName = nameInput.value.trim();
+function registerUserName() {
+  const name = nameInput.value.trim();
 
-  if (!currentUserName) {
-    setStatus("Iltimos, avval ismingizni kiriting.", true);
+  if (!name) {
+    setStatus("Ismingizni kiriting.", true);
     return false;
   }
 
-  localStorage.setItem("chat-user-name", currentUserName);
+  currentUserName = name;
+  localStorage.setItem("chat-user-name", name);
   return true;
-}
-
-function getRoomIdFromPath() {
-  const pathParts = window.location.pathname.split("/").filter(Boolean);
-  return pathParts[0] === "room" ? pathParts[1] : "";
 }
 
 function renderMessage(message) {
@@ -61,78 +53,32 @@ function renderHistory(history) {
   history.forEach(renderMessage);
 }
 
-function showChat(roomId) {
-  currentRoomId = roomId;
-  const fullUrl = `${window.location.origin}/room/${roomId}`;
-  roomLink.href = fullUrl;
-  roomLink.textContent = fullUrl;
+function showChat(userName) {
+  userLine.textContent = `Siz: ${userName}`;
   authScreen.classList.add("hidden");
   chatScreen.classList.remove("hidden");
 }
 
-async function createRoomAndJoin() {
-  if (!saveUserName()) {
+function joinChat() {
+  if (!registerUserName()) {
     return;
   }
 
-  setStatus("Suhbat yaratilmoqda...");
-
-  try {
-    const response = await fetch("/api/rooms", { method: "POST" });
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Xona yaratilmadi.");
-    }
-
-    joinRoom(data.roomId);
-  } catch (error) {
-    setStatus(error.message, true);
-  }
-}
-
-function joinRoom(roomId) {
-  if (!saveUserName()) {
-    return;
-  }
-
-  if (!roomId) {
-    setStatus("Suhbat topilmadi.", true);
-    return;
-  }
-
-  setStatus("Suhbatga ulanmoqda...");
-  showChat(roomId);
-  socket.emit("join-room", { roomId, userName: currentUserName });
+  setStatus("Chatga ulanmoqda...");
+  showChat(currentUserName);
+  socket.emit("join-chat", { userName: currentUserName });
   messageInput.focus();
 }
 
-authForm.addEventListener("submit", async (event) => {
+authForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const existingRoomId = getRoomIdFromPath();
-
-  if (existingRoomId) {
-    joinRoom(existingRoomId);
-    return;
-  }
-
-  await createRoomAndJoin();
-});
-
-copyLinkBtn.addEventListener("click", async () => {
-  if (!roomLink.href) {
-    return;
-  }
-
-  await navigator.clipboard.writeText(roomLink.href);
-  setStatus("Havola nusxalandi.");
+  joinChat();
 });
 
 messageForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const text = messageInput.value.trim();
-
   if (!text) {
     return;
   }
@@ -142,10 +88,10 @@ messageForm.addEventListener("submit", (event) => {
   messageInput.focus();
 });
 
-socket.on("room-history", ({ roomId, messages: history }) => {
-  showChat(roomId);
+socket.on("chat-history", ({ userName, messages: history }) => {
+  showChat(userName);
   renderHistory(history);
-  setStatus("Suhbat tayyor.");
+  setStatus("");
 });
 
 socket.on("new-message", (message) => {
@@ -157,25 +103,18 @@ socket.on("chat-error", (text) => {
 });
 
 window.addEventListener("load", async () => {
-  const roomIdFromPath = getRoomIdFromPath();
+  const savedName = localStorage.getItem("chat-user-name") || "";
+  nameInput.value = savedName;
+  introText.textContent = "Ro'yxatdan o'ting. Ism yozsangiz chat ochiladi.";
 
-  if (roomIdFromPath) {
-    introText.textContent = "Havola orqali kirdingiz. Ismingizni yozing va chatga kiring.";
+  try {
+    const response = await fetch("/api/messages");
+    const data = await response.json();
 
-    try {
-      const response = await fetch(`/api/rooms/${roomIdFromPath}/messages`);
-      const data = await response.json();
-
-      if (response.ok) {
-        showChat(roomIdFromPath);
-        renderHistory(data.messages);
-        chatScreen.classList.add("hidden");
-        authScreen.classList.remove("hidden");
-      }
-    } catch (error) {
-      setStatus("Suhbat ma'lumotini olishda xatolik yuz berdi.", true);
+    if (response.ok) {
+      renderHistory(data.messages);
     }
-  } else {
-    introText.textContent = "Ismingizni kiriting. Chat ochiladi va havolani boshqaga yuborasiz.";
+  } catch (error) {
+    setStatus("Chat ma'lumotini olishda xatolik yuz berdi.", true);
   }
 });
