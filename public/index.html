@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="uz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Umumiy Xabarlar</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="terminal">
+        <div class="terminal-bar">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <div id="authScreen" class="terminal-body">
+          <p class="line">$ shared-chat</p>
+          <p id="introText" class="line muted">Ismingizni kiriting.</p>
+
+          <form id="authForm" class="prompt-form">
+            <label class="prompt-row">
+              <span>&gt;</span>
+              <input id="nameInput" type="text" maxlength="30" placeholder="user1" autofocus />
+            </label>
+            <button id="enterBtn" type="submit">Kirish</button>
+          </form>
+
+          <p id="statusText" class="line status"></p>
+        </div>
+
+        <div id="chatScreen" class="terminal-body hidden">
+          <div class="chat-top">
+            <p class="line">$ session started</p>
+            <button id="copyLinkBtn" type="button">Havolani nusxalash</button>
+          </div>
+
+          <p class="line muted">
+            Havola:
+            <a id="roomLink" href="#" target="_blank" rel="noreferrer"></a>
+          </p>
+
+          <div id="messages" class="messages"></div>
+
+          <form id="messageForm" class="prompt-form">
+            <label class="prompt-row">
+              <span>&gt;</span>
+              <input id="messageInput" type="text" maxlength="1000" placeholder="xabar yozing..." />
+            </label>
+            <button type="submit">Yuborish</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+  </html>
